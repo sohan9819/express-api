@@ -23,7 +23,6 @@ export const createOne = async (
   try {
     const insertResult = await Todos.insertOne(req.body);
     if (!insertResult.acknowledged) throw new Error('Error inserting todo');
-    // console.log('Inserted Object  ', req.body);
     res.status(201);
     res.json({ _id: insertResult.insertedId, ...req.body });
   } catch (error) {
