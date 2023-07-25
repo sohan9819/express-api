@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 
@@ -18,11 +19,6 @@ export function validateRequest(validators: RequestValidators) {
       }
       next();
     } catch (error) {
-      if (error instanceof ZodError) {
-        res.set('Content-Type', 'application/json');
-        res.status(422);
-        res.json(...error.issues);
-      }
       next(error);
     }
   };
@@ -38,16 +34,23 @@ export function notFound(req: Request, res: Response, next: NextFunction) {
   next(error);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function errorHandler(
   err: Error,
   req: Request,
-  res: Response<ErrorResponse>
+  res: Response<ErrorResponse>,
+  next: NextFunction
 ) {
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode);
-  res.json({
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
-  });
+  if (err instanceof ZodError) {
+    res.set('Content-Type', 'application/json');
+    res.status(422);
+    res.json(...err.issues);
+  } else {
+    const statusCode = res.statusCode ? res.statusCode : 500;
+    res.status(statusCode);
+    // console.log('Error handler error : ', err.message);
+    res.json({
+      message: err.message,
+      stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
+    });
+  }
 }
